@@ -1,28 +1,51 @@
-/**
- * hooks/useApi.js
- * 
- * Placeholder custom hook for data fetching.
- * Expand this when you start building features.
- */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import client from '../api/client';
 
-const useApi = (path) => {
+export const useApi = (path) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { getToken } = useAuth();
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!path) return;
     setLoading(true);
-    client
-      .get(path)
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [path]);
+    try {
+      const token = await getToken();
+      const result = await client.get(path, token);
+      setData(result);
+      setError(null);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [path, getToken]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
+};
+
+export const useMutation = () => {
+  const { getToken } = useAuth();
+  
+  const mutate = async (method, path, body = null) => {
+    const token = await getToken();
+    if (method === 'delete') {
+      return client.delete(path, token);
+    }
+    return client[method](path, body, token);
+  };
+  
+  return {
+    post: (path, body) => mutate('post', path, body),
+    put: (path, body) => mutate('put', path, body),
+    del: (path) => mutate('delete', path),
+  };
 };
 
 export default useApi;
