@@ -6,8 +6,11 @@ router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// TODO: mount feature routers here as you build them, e.g.:
-// const userRoutes = require('./userRoutes');
-// router.use('/users', userRoutes);
+// Mount feature routers
+const subscriptionRoutes = require('./subscriptionRoutes');
+const assignmentRoutes = require('./assignmentRoutes');
+
+router.use('/subscriptions', subscriptionRoutes);
+router.use('/assignments', assignmentRoutes);
 
 module.exports = router;
