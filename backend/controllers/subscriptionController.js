@@ -53,11 +53,14 @@ const createSubscription = async (req, res, next) => {
 const updateSubscription = async (req, res, next) => {
   try {
     const userId = req.auth.userId;
+
+    // Strip fields the client must never overwrite
+    const { userId: _u, _id, createdAt, updatedAt, __v, ...updateData } = req.body;
     
     // Ensure we only update if it belongs to the user
     const subscription = await Subscription.findOneAndUpdate(
       { _id: req.params.id, userId },
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
