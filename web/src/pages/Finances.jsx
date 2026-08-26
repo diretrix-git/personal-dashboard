@@ -63,7 +63,7 @@ const Finances = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-500">
+      <div className="flex items-center justify-center h-64 text-stone-500">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mr-3"></div>
         Loading finances...
       </div>
@@ -94,8 +94,8 @@ const Finances = () => {
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Finances</h2>
-          <p className="text-slate-500 mt-1">Track your income and expenses.</p>
+          <h2 className="text-3xl font-extrabold text-stone-900 tracking-tight">Finances</h2>
+          <p className="text-stone-500 mt-1">Track your income and expenses.</p>
         </div>
         {!showForm && (
           <button 
@@ -109,30 +109,30 @@ const Finances = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+        <div className="bg-white rounded-xl p-5 border border-stone-200 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-emerald-100 text-emerald-600 rounded-lg">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500">Total Income</p>
-            <p className="text-2xl font-bold text-slate-900">${totalIncome.toFixed(2)}</p>
+            <p className="text-sm font-medium text-stone-500">Total Income</p>
+            <p className="text-2xl font-bold text-stone-900">${totalIncome.toFixed(2)}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+        <div className="bg-white rounded-xl p-5 border border-stone-200 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-rose-100 text-rose-600 rounded-lg">
             <TrendingDown className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500">Total Expenses</p>
-            <p className="text-2xl font-bold text-slate-900">${totalExpense.toFixed(2)}</p>
+            <p className="text-sm font-medium text-stone-500">Total Expenses</p>
+            <p className="text-2xl font-bold text-stone-900">${totalExpense.toFixed(2)}</p>
           </div>
         </div>
-        <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="bg-stone-900 rounded-xl p-5 border border-stone-800 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-white/10 text-white rounded-lg">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-400">Net Balance</p>
+            <p className="text-sm font-medium text-stone-400">Net Balance</p>
             <p className={`text-2xl font-bold ${balance >= 0 ? 'text-white' : 'text-rose-400'}`}>
               ${balance.toFixed(2)}
             </p>
@@ -141,40 +141,40 @@ const Finances = () => {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
-          <h3 className="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100">
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          <h3 className="text-lg font-bold text-stone-900 mb-4 pb-2 border-b border-stone-100">
             {editing ? 'Edit Transaction' : 'Add New Transaction'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Type</label>
-              <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all bg-white" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
+              <label className="text-sm font-medium text-stone-700">Type</label>
+              <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all bg-white" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Amount ($)</label>
-              <input required type="number" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="0.00" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} />
+              <label className="text-sm font-medium text-stone-700">Amount ($)</label>
+              <input required type="number" step="0.01" className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="0.00" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Category</label>
-              <input required className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="Food, Rent, Salary..." value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
+              <label className="text-sm font-medium text-stone-700">Category</label>
+              <input required className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="Food, Rent, Salary..." value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Date</label>
-              <input required type="date" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+              <label className="text-sm font-medium text-stone-700">Date</label>
+              <input required type="date" className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
             </div>
             <div className="space-y-1 md:col-span-2 lg:col-span-4">
-              <label className="text-sm font-medium text-slate-700">Description (Optional)</label>
-              <input className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="Notes..." value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+              <label className="text-sm font-medium text-stone-700">Description (Optional)</label>
+              <input className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="Notes..." value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">
             <button type="submit" className="px-5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm">
               {editing ? 'Save Changes' : 'Add Transaction'}
             </button>
-            <button type="button" onClick={resetForm} className="px-5 py-2 bg-white text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors font-medium">
+            <button type="button" onClick={resetForm} className="px-5 py-2 bg-white text-stone-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors font-medium">
               Cancel
             </button>
           </div>
@@ -184,25 +184,25 @@ const Finances = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Col: Transactions */}
         <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-lg font-bold text-slate-900">Recent Transactions</h3>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <h3 className="text-lg font-bold text-stone-900">Recent Transactions</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
             {finances && finances.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">No transactions found.</div>
+              <div className="p-8 text-center text-stone-500">No transactions found.</div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-stone-100">
                 {(finances || []).map(item => (
-                  <div key={item._id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                  <div key={item._id} className="p-4 flex items-center justify-between hover:bg-stone-50 transition-colors group">
                     <div className="flex items-center gap-4">
                       <div className={`p-2 rounded-full ${item.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
                         {item.type === 'income' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{item.category}</p>
-                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <p className="font-semibold text-stone-900">{item.category}</p>
+                        <div className="flex items-center gap-2 text-sm text-stone-500">
                           <span>{item.date.split('T')[0]}</span>
                           {item.description && (
                             <>
-                              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                              <span className="w-1 h-1 rounded-full bg-stone-300"></span>
                               <span className="truncate max-w-[150px] sm:max-w-xs">{item.description}</span>
                             </>
                           )}
@@ -210,14 +210,14 @@ const Finances = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <p className={`font-bold whitespace-nowrap ${item.type === 'income' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                      <p className={`font-bold whitespace-nowrap ${item.type === 'income' ? 'text-emerald-600' : 'text-stone-900'}`}>
                         {item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)}
                       </p>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleEdit(item)} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors" title="Edit">
+                        <button onClick={() => handleEdit(item)} className="p-1.5 text-stone-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors" title="Edit">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(item._id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors" title="Delete">
+                        <button onClick={() => handleDelete(item._id)} className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors" title="Delete">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -231,10 +231,10 @@ const Finances = () => {
 
         {/* Right Col: Chart */}
         <div>
-          <h3 className="text-lg font-bold text-slate-900 mb-4">Expenses by Category</h3>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center min-h-[350px]">
+          <h3 className="text-lg font-bold text-stone-900 mb-4">Expenses by Category</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 flex flex-col items-center justify-center min-h-[350px]">
             {chartData.length === 0 ? (
-              <p className="text-slate-500 text-center">Not enough data to display chart.</p>
+              <p className="text-stone-500 text-center">Not enough data to display chart.</p>
             ) : (
               <div className="w-full h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">

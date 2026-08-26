@@ -1,6 +1,7 @@
 import { useApi } from '../hooks/useApi';
 import { isBefore, addDays, parseISO, format } from 'date-fns';
 import { Calendar, FileText, BellRing, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Home = () => {
   const { data: subs, loading: loadingSubs } = useApi('/subscriptions');
@@ -8,7 +9,7 @@ const Home = () => {
 
   if (loadingSubs || loadingAssignments) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-500">
+      <div className="flex items-center justify-center h-64 text-stone-500">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mr-3"></div>
         Loading your dashboard...
       </div>
@@ -31,9 +32,9 @@ const Home = () => {
       title: sub.name,
       subtitle: `${sub.currency} ${sub.cost} (${sub.billingCycle})`,
       icon: Calendar,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
-      border: 'border-indigo-200'
+      color: 'text-primary-600',
+      bg: 'bg-primary-50',
+      border: 'border-primary-100'
     }));
 
   // Filter and format assignments
@@ -50,9 +51,9 @@ const Home = () => {
       title: task.taskTitle,
       subtitle: `${task.courseName} - ${task.status}`,
       icon: FileText,
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
-      border: 'border-rose-200'
+      color: 'text-accent-500',
+      bg: 'bg-orange-50',
+      border: 'border-orange-100'
     }));
 
   // Combine and sort
@@ -60,60 +61,112 @@ const Home = () => {
 
   return (
     <div className="space-y-6">
-      <header className="mb-8">
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Overview</h2>
-        <p className="text-slate-500 mt-1">Here's what's happening this week.</p>
+      <header className="mb-10">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight">Overview</h2>
+        <p className="text-stone-500 mt-2 font-medium text-lg">Here's what's happening this week.</p>
       </header>
 
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-4 flex items-center justify-between">
+      <section className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 overflow-hidden">
+        <div className="bg-stone-900 px-6 py-4 flex items-center justify-between">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <BellRing className="w-5 h-5 text-yellow-400" />
+            <BellRing className="w-5 h-5 text-accent-500" />
             Upcoming in 7 Days
           </h3>
-          <span className="bg-white/20 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+          <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-lg">
             {upcomingItems.length} {upcomingItems.length === 1 ? 'Item' : 'Items'}
           </span>
         </div>
         
-        <div className="p-6">
+        <div className="p-6 md:p-8">
           {upcomingItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
-              <Sparkles className="w-12 h-12 text-slate-300 mb-3" />
-              <p className="text-slate-600 font-medium">You're all caught up!</p>
-              <p className="text-slate-400 text-sm mt-1">No upcoming renewals or due dates this week.</p>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-16 text-center bg-stone-50/50 rounded-2xl border border-dashed border-stone-200"
+            >
+              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4">
+                <Sparkles className="w-8 h-8 text-primary-400" />
+              </div>
+              <p className="text-stone-800 font-bold text-lg">You're all caught up!</p>
+              <p className="text-stone-500 font-medium mt-1">No upcoming renewals or due dates this week.</p>
+            </motion.div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+            >
               {upcomingItems.map((item, idx) => {
                 const Icon = item.icon;
+                const isFirst = idx === 0;
+
+                if (isFirst) {
+                   return (
+                     <motion.div 
+                       key={`${item.type}-${item._id}-${idx}`}
+                       variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+                       className="col-span-1 md:col-span-2 lg:col-span-2 relative p-6 md:p-8 rounded-3xl bg-gradient-to-br from-primary-600 to-primary-800 text-white shadow-xl shadow-primary-900/20 overflow-hidden group"
+                     >
+                       <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700" />
+                       
+                       <div className="relative z-10 flex flex-col h-full justify-between min-h-[140px]">
+                         <div className="flex justify-between items-start mb-6">
+                           <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm text-white shadow-inner">
+                             <Icon className="w-6 h-6" />
+                           </div>
+                           <span className="text-sm font-extrabold px-3 py-1.5 bg-accent-500 text-white rounded-xl shadow-md">
+                             {format(item.date, 'MMM do')}
+                           </span>
+                         </div>
+                         <div>
+                           <p className="text-primary-100 font-bold mb-1.5 uppercase tracking-wider text-xs">Nearest Upcoming</p>
+                           <h4 className="font-extrabold text-2xl md:text-3xl leading-tight mb-2">
+                             {item.title}
+                           </h4>
+                           <p className="text-primary-100 font-medium md:text-lg">
+                             {item.subtitle}
+                           </p>
+                         </div>
+                       </div>
+                     </motion.div>
+                   )
+                }
+
                 return (
-                  <div key={`${item.type}-${item._id}-${idx}`} className={`relative p-5 rounded-xl border ${item.border} bg-white shadow-sm hover:shadow-md transition-shadow group`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className={`p-2 rounded-lg ${item.bg} ${item.color}`}>
+                  <motion.div 
+                    key={`${item.type}-${item._id}-${idx}`}
+                    variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    className={`relative p-6 rounded-3xl border ${item.border} bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all`}
+                  >
+                    <div className="flex justify-between items-start mb-5">
+                      <div className={`p-3 rounded-2xl ${item.bg} ${item.color}`}>
                         <Icon className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded-md">
+                      <span className="text-xs font-bold px-3 py-1.5 bg-stone-100 text-stone-600 rounded-xl">
                         {format(item.date, 'MMM do')}
                       </span>
                     </div>
-                    <h4 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-primary-600 transition-colors">
+                    <h4 className="font-bold text-lg text-stone-900 leading-tight mb-1.5">
                       {item.title}
                     </h4>
-                    <p className="text-sm text-slate-500 font-medium">
+                    <p className="text-sm text-stone-500 font-medium">
                       {item.subtitle}
                     </p>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        {/* We can add quick stats here later (e.g. Total Subscriptions, Total Tasks, Monthly Expenses) */}
-      </div>
     </div>
   );
 };

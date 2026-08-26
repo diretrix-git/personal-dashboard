@@ -54,13 +54,13 @@ const PasswordGenerator = () => {
         <div className="inline-flex items-center justify-center p-3 bg-indigo-100 text-indigo-600 rounded-2xl mb-4">
           <KeyRound className="w-8 h-8" />
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Password Generator</h2>
-        <p className="text-slate-500 mt-2">Create strong, secure passwords instantly.</p>
+        <h2 className="text-3xl font-extrabold text-stone-900 tracking-tight">Password Generator</h2>
+        <p className="text-stone-500 mt-2">Create strong, secure passwords instantly.</p>
       </header>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
         {/* Output Area */}
-        <div className="bg-slate-900 p-6 sm:p-8 relative group">
+        <div className="bg-stone-900 p-6 sm:p-8 relative group">
           <div className="flex items-center justify-between gap-4">
             <div className="font-mono text-xl sm:text-2xl text-emerald-400 break-all select-all tracking-wider">
               {password}
@@ -68,7 +68,7 @@ const PasswordGenerator = () => {
             <button
               onClick={handleCopy}
               className={`shrink-0 p-2 rounded-lg flex items-center justify-center transition-colors ${
-                copied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white'
+                copied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-stone-300 hover:bg-white/20 hover:text-white'
               }`}
               title="Copy to clipboard"
             >
@@ -86,7 +86,7 @@ const PasswordGenerator = () => {
         <div className="p-6 sm:p-8 space-y-8">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <label className="text-sm font-bold text-slate-700">Password Length</label>
+              <label className="text-sm font-bold text-stone-700">Password Length</label>
               <span className="text-lg font-bold text-primary-600 bg-primary-50 px-3 py-1 rounded-lg">{length}</span>
             </div>
             <input
@@ -95,36 +95,36 @@ const PasswordGenerator = () => {
               max="64"
               value={length}
               onChange={(e) => setLength(Number(e.target.value))}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+              className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
             />
           </div>
 
           <div className="space-y-3">
-            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
-              <span className="font-medium text-slate-700">Include Uppercase (A-Z)</span>
+            <label className="flex items-center justify-between p-3 rounded-lg border border-stone-200 hover:bg-stone-50 transition-colors cursor-pointer">
+              <span className="font-medium text-stone-700">Include Uppercase (A-Z)</span>
               <input
                 type="checkbox"
                 checked={includeUppercase}
                 onChange={(e) => setIncludeUppercase(e.target.checked)}
-                className="w-5 h-5 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                className="w-5 h-5 text-primary-600 border-stone-300 rounded focus:ring-primary-500"
               />
             </label>
-            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
-              <span className="font-medium text-slate-700">Include Numbers (0-9)</span>
+            <label className="flex items-center justify-between p-3 rounded-lg border border-stone-200 hover:bg-stone-50 transition-colors cursor-pointer">
+              <span className="font-medium text-stone-700">Include Numbers (0-9)</span>
               <input
                 type="checkbox"
                 checked={includeNumbers}
                 onChange={(e) => setIncludeNumbers(e.target.checked)}
-                className="w-5 h-5 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                className="w-5 h-5 text-primary-600 border-stone-300 rounded focus:ring-primary-500"
               />
             </label>
-            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
-              <span className="font-medium text-slate-700">Include Symbols (!@#$)</span>
+            <label className="flex items-center justify-between p-3 rounded-lg border border-stone-200 hover:bg-stone-50 transition-colors cursor-pointer">
+              <span className="font-medium text-stone-700">Include Symbols (!@#$)</span>
               <input
                 type="checkbox"
                 checked={includeSymbols}
                 onChange={(e) => setIncludeSymbols(e.target.checked)}
-                className="w-5 h-5 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                className="w-5 h-5 text-primary-600 border-stone-300 rounded focus:ring-primary-500"
               />
             </label>
           </div>
