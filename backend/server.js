@@ -21,6 +21,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+const { clerkMiddleware } = require('@clerk/express');
+app.use(clerkMiddleware());
+
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api', routes);
 
