@@ -10,6 +10,7 @@ const Layout = () => {
           <Link to="/" style={{ textDecoration: 'none', color: '#333' }}>Dashboard</Link>
           <Link to="/subscriptions" style={{ textDecoration: 'none', color: '#333' }}>Subscriptions</Link>
           <Link to="/assignments" style={{ textDecoration: 'none', color: '#333' }}>Assignments</Link>
+          <Link to="/finances" style={{ textDecoration: 'none', color: '#333' }}>Finances</Link>
           <Link to="/passwords" style={{ textDecoration: 'none', color: '#333' }}>Passwords</Link>
           <UserButton />
         </nav>

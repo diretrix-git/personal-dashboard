@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Subscriptions from './pages/Subscriptions';
 import Assignments from './pages/Assignments';
 import PasswordGenerator from './pages/PasswordGenerator';
+import Finances from './pages/Finances';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -34,6 +35,12 @@ function App() {
             <Route path="assignments" element={
               <>
                 <SignedIn><Assignments /></SignedIn>
+                <SignedOut><Navigate to="/sign-in" replace /></SignedOut>
+              </>
+            } />
+            <Route path="finances" element={
+              <>
+                <SignedIn><Finances /></SignedIn>
                 <SignedOut><Navigate to="/sign-in" replace /></SignedOut>
               </>
             } />
