@@ -10,9 +10,11 @@ router.get('/health', (req, res) => {
 const subscriptionRoutes = require('./subscriptionRoutes');
 const assignmentRoutes = require('./assignmentRoutes');
 const reminderRoutes = require('./reminderRoutes');
+const financeRoutes = require('./financeRoutes');
 
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/assignments', assignmentRoutes);
 router.use('/reminders', reminderRoutes);
+router.use('/finances', financeRoutes);
 
 module.exports = router;
