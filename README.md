@@ -1,11 +1,27 @@
 # Personal Dashboard
 
-A monorepo containing:
+## Problem Statement
+Managing daily tasks, monitoring financial health, tracking habits, and staying updated on personal goals often requires juggling multiple applications and platforms. This fragmentation leads to reduced productivity and a scattered overview of personal data.
 
-| Folder | Stack |
-|--------|-------|
-| `/backend` | Node.js + Express + MongoDB (Mongoose) |
-| `/web` | React (Vite) + Clerk |
+## Objectives
+- Create a unified, centralized hub for managing personal information.
+- Provide an intuitive, modern, and visually appealing user interface.
+- Ensure secure authentication and personalized experiences for users.
+- Deliver real-time or near-real-time updates on tasks, schedules, and metrics.
+
+## Tech Stack Used
+### Backend
+- **Node.js + Express**: RESTful API server.
+- **MongoDB (Mongoose)**: NoSQL Database for flexible data storage.
+- **Clerk (Node SDK)**: Secure backend authentication validation.
+
+### Frontend
+- **React (Vite)**: Fast, modern UI development.
+- **Tailwind CSS v4**: Utility-first styling.
+- **Clerk (React SDK)**: Seamless user authentication and session management.
+- **Framer Motion**: Fluid animations and transitions.
+- **Recharts**: Data visualization and charts.
+- **Lucide React**: Beautiful, consistent iconography.
 
 ---
 
@@ -94,8 +110,8 @@ personal-dashboard/
 │   │   │   └── useApi.js    # Generic data-fetching hook
 │   │   ├── pages/
 │   │   │   └── Home.jsx     # Placeholder home page
-│   │   ├── App.jsx          # Root component (Clerk wiring instructions in comments)
-│   │   └── main.jsx         # Vite entry point
+│   │   ├── App.jsx          # Root component
+│   │   └── main.jsx         # Vite entry point (ClerkProvider wrapper)
 │   ├── .env.example
 │   └── package.json
 │
@@ -121,9 +137,15 @@ personal-dashboard/
 
 ---
 
-## Next steps
+## Things Yet to Be Done
+- Define and implement Mongoose schemas in `backend/models/` (User, Tasks, Notes, etc.).
+- Create API route handlers and controllers in `backend/controllers/` and `backend/routes/`.
+- Build the main dashboard UI pages and components in `web/src/pages/` and `web/src/components/`.
+- Integrate Recharts to visualize dashboard data.
+- Connect the frontend React application to the backend Express API using `client.js`.
 
-- Add Mongoose models in `backend/models/`
-- Add route handlers in `backend/controllers/` and `backend/routes/`
-- Wire up `<ClerkProvider>` in `web/src/App.jsx` (instructions in the file)
-- Build pages and components in `web/src/pages/` and `web/src/components/`
+## Future Improvements
+- Add mobile responsiveness and Progressive Web App (PWA) support.
+- Implement dark/light mode theming with Tailwind CSS.
+- Add third-party integrations (e.g., Google Calendar, GitHub activity).
+- Introduce a notification system (email or push notifications).
