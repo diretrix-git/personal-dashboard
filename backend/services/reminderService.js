@@ -1,4 +1,5 @@
 const { Resend } = require('resend');
+const { clerkClient } = require('@clerk/express');
 const Subscription = require('../models/Subscription');
 const Assignment = require('../models/Assignment');
 const ReminderLog = require('../models/ReminderLog');
@@ -55,6 +56,24 @@ const markAsSent = async (itemId, itemType, userId, dateKey) => {
 };
 
 /**
+ * Fetch a user's primary email address from Clerk using their userId.
+ * Falls back to REMINDER_RECIPIENT_EMAIL env var if Clerk lookup fails.
+ */
+const getUserEmail = async (userId) => {
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    const primary = user.emailAddresses.find(
+      (e) => e.id === user.primaryEmailAddressId
+    );
+    if (primary) return primary.emailAddress;
+  } catch (err) {
+    console.warn(`[reminders] Could not fetch Clerk email for ${userId}:`, err.message);
+  }
+  // Fallback
+  return process.env.REMINDER_RECIPIENT_EMAIL || null;
+};
+
+/**
  * Send a single reminder email via Resend.
  */
 const sendEmail = async ({ to, subject, html }) => {
@@ -88,6 +107,15 @@ const processReminders = async () => {
   const todayKey = toDateKey(now);
   const results = { subscriptions: 0, assignments: 0, skipped: 0, errors: [] };
 
+  // Cache resolved emails to avoid duplicate Clerk API calls in one run
+  const emailCache = {};
+  const resolveEmail = async (userId) => {
+    if (!emailCache[userId]) {
+      emailCache[userId] = await getUserEmail(userId);
+    }
+    return emailCache[userId];
+  };
+
   // ── Subscriptions renewing within 3 days ─────────────────────────────────
   const upcomingSubs = await Subscription.find({
     renewalDate: { $gte: now, $lte: threeDaysOut },
@@ -101,9 +129,15 @@ const processReminders = async () => {
     }
 
     try {
+      const recipientEmail = await resolveEmail(sub.userId);
+      if (!recipientEmail) {
+        results.errors.push({ type: 'subscription', id: sub._id, error: 'No email address found for user' });
+        continue;
+      }
+
       const renewalStr = sub.renewalDate.toISOString().split('T')[0];
       await sendEmail({
-        to: process.env.REMINDER_RECIPIENT_EMAIL || 'delivered@resend.dev',
+        to: recipientEmail,
         subject: `Subscription Reminder: ${sub.name} renews on ${renewalStr}`,
         html: `
           <h2>Subscription Renewal Reminder</h2>
@@ -137,9 +171,15 @@ const processReminders = async () => {
     }
 
     try {
+      const recipientEmail = await resolveEmail(task.userId);
+      if (!recipientEmail) {
+        results.errors.push({ type: 'assignment', id: task._id, error: 'No email address found for user' });
+        continue;
+      }
+
       const dueStr = task.dueDate.toISOString().split('T')[0];
       await sendEmail({
-        to: process.env.REMINDER_RECIPIENT_EMAIL || 'delivered@resend.dev',
+        to: recipientEmail,
         subject: `Assignment Due Soon: ${task.taskTitle} (${dueStr})`,
         html: `
           <h2>Assignment Due Date Reminder</h2>
