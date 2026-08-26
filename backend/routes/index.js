@@ -9,8 +9,10 @@ router.get('/health', (req, res) => {
 // Mount feature routers
 const subscriptionRoutes = require('./subscriptionRoutes');
 const assignmentRoutes = require('./assignmentRoutes');
+const reminderRoutes = require('./reminderRoutes');
 
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/assignments', assignmentRoutes);
+router.use('/reminders', reminderRoutes);
 
 module.exports = router;
