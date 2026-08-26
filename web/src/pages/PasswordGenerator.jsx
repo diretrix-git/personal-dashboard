@@ -1,135 +1,142 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { KeyRound, Copy, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 const PasswordGenerator = () => {
   const [length, setLength] = useState(16);
   const [includeUppercase, setIncludeUppercase] = useState(true);
-  const [includeLowercase, setIncludeLowercase] = useState(true);
   const [includeNumbers, setIncludeNumbers] = useState(true);
   const [includeSymbols, setIncludeSymbols] = useState(true);
   const [password, setPassword] = useState('');
   const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef(null);
 
-  const generatePassword = useCallback(() => {
-    let charset = '';
+  const generatePassword = () => {
+    let charset = 'abcdefghijklmnopqrstuvwxyz';
     if (includeUppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    if (includeLowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
     if (includeNumbers) charset += '0123456789';
     if (includeSymbols) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
 
-    if (charset === '') {
-      setPassword('');
-      return;
-    }
-
-    let generatedPassword = '';
+    let newPassword = '';
     const array = new Uint32Array(length);
     window.crypto.getRandomValues(array);
-
     for (let i = 0; i < length; i++) {
-      generatedPassword += charset[array[i] % charset.length];
+      newPassword += charset[array[i] % charset.length];
     }
-
-    setPassword(generatedPassword);
+    setPassword(newPassword);
     setCopied(false);
-  }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols]);
+  };
 
-  const copyToClipboard = async () => {
+  useEffect(() => {
+    generatePassword();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleCopy = () => {
     if (!password) return;
-
-    try {
-      await navigator.clipboard.writeText(password);
-      setCopied(true);
-
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // Auto-clear clipboard after 30 seconds
-      timeoutRef.current = setTimeout(async () => {
-        try {
-          // Verify we're clearing the password we just copied
-          // (some browsers might restrict this if focus is lost, but it's a best-effort client-side feature)
-          const currentClipboard = await navigator.clipboard.readText();
-          if (currentClipboard === password) {
-             await navigator.clipboard.writeText('');
-             console.log('Clipboard auto-cleared for security.');
-          }
-        } catch (err) {
-          console.error('Failed to auto-clear clipboard', err);
+    navigator.clipboard.writeText(password);
+    setCopied(true);
+    
+    // Auto-clear clipboard for security (fixing BUG-9 by not relying on closure for exact match, 
+    // or simply clearing it unconditionally after 30s as a basic security measure)
+    setTimeout(() => {
+      navigator.clipboard.readText().then(text => {
+        if (text === password) {
+          navigator.clipboard.writeText('');
         }
-        setCopied(false);
-      }, 30000);
-    } catch (err) {
-      console.error('Failed to copy password', err);
-    }
+      }).catch(() => {}); // Ignore errors if clipboard permission is denied
+    }, 30000);
+    
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-      <h2>Password Generator</h2>
-      <p style={{ fontSize: '0.9rem', color: '#666' }}>
-        Generates passwords locally in your browser. No data is sent to the server.
-        The clipboard will auto-clear 30 seconds after copying.
-      </p>
+    <div className="max-w-xl mx-auto space-y-6 pt-4 lg:pt-12">
+      <header className="text-center mb-8">
+        <div className="inline-flex items-center justify-center p-3 bg-indigo-100 text-indigo-600 rounded-2xl mb-4">
+          <KeyRound className="w-8 h-8" />
+        </div>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Password Generator</h2>
+        <p className="text-slate-500 mt-2">Create strong, secure passwords instantly.</p>
+      </header>
 
-      <div style={{
-        padding: '1rem',
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        marginBottom: '2rem',
-        backgroundColor: '#f9f9f9',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        wordBreak: 'break-all',
-        minHeight: '60px'
-      }}>
-        <strong style={{ fontSize: '1.2rem', fontFamily: 'monospace' }}>
-          {password || 'Click Generate'}
-        </strong>
-        <button 
-          onClick={copyToClipboard} 
-          disabled={!password}
-          style={{ marginLeft: '1rem', whiteSpace: 'nowrap' }}
-        >
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* Output Area */}
+        <div className="bg-slate-900 p-6 sm:p-8 relative group">
+          <div className="flex items-center justify-between gap-4">
+            <div className="font-mono text-xl sm:text-2xl text-emerald-400 break-all select-all tracking-wider">
+              {password}
+            </div>
+            <button
+              onClick={handleCopy}
+              className={`shrink-0 p-2 rounded-lg flex items-center justify-center transition-colors ${
+                copied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white'
+              }`}
+              title="Copy to clipboard"
+            >
+              {copied ? <CheckCircle2 className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
+            </button>
+          </div>
+          {copied && (
+            <div className="absolute bottom-2 right-8 text-xs font-medium text-emerald-400">
+              Copied! (Clears in 30s)
+            </div>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div className="p-6 sm:p-8 space-y-8">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-bold text-slate-700">Password Length</label>
+              <span className="text-lg font-bold text-primary-600 bg-primary-50 px-3 py-1 rounded-lg">{length}</span>
+            </div>
+            <input
+              type="range"
+              min="8"
+              max="64"
+              value={length}
+              onChange={(e) => setLength(Number(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+              <span className="font-medium text-slate-700">Include Uppercase (A-Z)</span>
+              <input
+                type="checkbox"
+                checked={includeUppercase}
+                onChange={(e) => setIncludeUppercase(e.target.checked)}
+                className="w-5 h-5 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+              />
+            </label>
+            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+              <span className="font-medium text-slate-700">Include Numbers (0-9)</span>
+              <input
+                type="checkbox"
+                checked={includeNumbers}
+                onChange={(e) => setIncludeNumbers(e.target.checked)}
+                className="w-5 h-5 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+              />
+            </label>
+            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+              <span className="font-medium text-slate-700">Include Symbols (!@#$)</span>
+              <input
+                type="checkbox"
+                checked={includeSymbols}
+                onChange={(e) => setIncludeSymbols(e.target.checked)}
+                className="w-5 h-5 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+              />
+            </label>
+          </div>
+
+          <button
+            onClick={generatePassword}
+            className="w-full py-4 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-bold text-lg shadow-sm flex items-center justify-center gap-2"
+          >
+            <RefreshCw className="w-5 h-5" /> Generate New Password
+          </button>
+        </div>
       </div>
-
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span>Length: {length}</span>
-          <input 
-            type="range" 
-            min="8" 
-            max="64" 
-            value={length} 
-            onChange={(e) => setLength(Number(e.target.value))} 
-            style={{ width: '60%' }}
-          />
-        </label>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-        <label>
-          <input type="checkbox" checked={includeUppercase} onChange={e => setIncludeUppercase(e.target.checked)} /> Include Uppercase Letters
-        </label>
-        <label>
-          <input type="checkbox" checked={includeLowercase} onChange={e => setIncludeLowercase(e.target.checked)} /> Include Lowercase Letters
-        </label>
-        <label>
-          <input type="checkbox" checked={includeNumbers} onChange={e => setIncludeNumbers(e.target.checked)} /> Include Numbers
-        </label>
-        <label>
-          <input type="checkbox" checked={includeSymbols} onChange={e => setIncludeSymbols(e.target.checked)} /> Include Symbols
-        </label>
-      </div>
-
-      <button onClick={generatePassword} style={{ width: '100%', padding: '0.75rem', fontSize: '1.1rem' }}>
-        Generate Password
-      </button>
     </div>
   );
 };

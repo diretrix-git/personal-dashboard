@@ -1,140 +1,271 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useApi, useMutation } from '../hooks/useApi';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { isSameMonth, parseISO } from 'date-fns';
+import { Plus, Trash2, TrendingUp, TrendingDown, Wallet, Edit2 } from 'lucide-react';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff7300'];
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 const Finances = () => {
   const { data: finances, loading, refetch } = useApi('/finances');
   const { post, put, del } = useMutation();
   const [editing, setEditing] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
-    amount: '', type: 'expense', category: 'General', date: '', description: ''
+    amount: '', type: 'expense', category: '', date: '', description: ''
   });
 
   const resetForm = () => {
-    setForm({ amount: '', type: 'expense', category: 'General', date: '', description: '' });
+    setForm({ amount: '', type: 'expense', category: '', date: '', description: '' });
     setEditing(null);
+    setShowForm(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { ...form, amount: Number(form.amount) };
-    if (editing) {
-      await put(`/finances/${editing._id}`, payload);
-    } else {
-      await post('/finances', payload);
+    try {
+      if (editing) {
+        await put(`/finances/${editing._id}`, payload);
+      } else {
+        await post('/finances', payload);
+      }
+      resetForm();
+      refetch();
+    } catch (err) {
+      alert(err.message || 'Error saving record');
     }
-    resetForm();
-    refetch();
   };
 
-  const handleEdit = (entry) => {
+  const handleEdit = (record) => {
     setForm({
-      amount: entry.amount,
-      type: entry.type,
-      category: entry.category,
-      date: entry.date.split('T')[0],
-      description: entry.description || ''
+      amount: record.amount,
+      type: record.type,
+      category: record.category,
+      date: record.date.split('T')[0],
+      description: record.description || ''
     });
-    setEditing(entry);
+    setEditing(record);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this entry?')) {
-      await del(`/finances/${id}`);
-      refetch();
+    if (window.confirm('Delete this record?')) {
+      try {
+        await del(`/finances/${id}`);
+        refetch();
+      } catch (err) {
+        alert(err.message || 'Error deleting record');
+      }
     }
   };
 
-  // Chart Logic: Expenses by Category for the current month
-  const chartData = useMemo(() => {
-    if (!finances) return [];
-    
-    const now = new Date();
-    const expensesThisMonth = finances.filter(entry => 
-      entry.type === 'expense' && isSameMonth(parseISO(entry.date), now)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-500">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mr-3"></div>
+        Loading finances...
+      </div>
     );
+  }
 
-    const categoryTotals = expensesThisMonth.reduce((acc, entry) => {
-      acc[entry.category] = (acc[entry.category] || 0) + entry.amount;
-      return acc;
-    }, {});
+  // Calculate totals and chart data
+  let totalIncome = 0;
+  let totalExpense = 0;
+  const expensesByCategory = {};
 
-    return Object.keys(categoryTotals).map(cat => ({
-      name: cat,
-      value: categoryTotals[cat]
-    })).sort((a, b) => b.value - a.value);
-  }, [finances]);
+  (finances || []).forEach(item => {
+    if (item.type === 'income') totalIncome += item.amount;
+    else {
+      totalExpense += item.amount;
+      expensesByCategory[item.category] = (expensesByCategory[item.category] || 0) + item.amount;
+    }
+  });
 
-  if (loading) return <div>Loading finances...</div>;
+  const chartData = Object.keys(expensesByCategory).map(key => ({
+    name: key,
+    value: expensesByCategory[key]
+  })).sort((a, b) => b.value - a.value);
+
+  const balance = totalIncome - totalExpense;
 
   return (
-    <div>
-      <h2>Finances</h2>
-
-      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-        <div style={{ flex: '1 1 400px' }}>
-          <form onSubmit={handleSubmit} style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px', height: '100%' }}>
-            <h3>{editing ? 'Edit Entry' : 'Add Entry'}</h3>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-              <input required type="number" step="0.01" placeholder="Amount" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} />
-              <select value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-              </select>
-              <input required placeholder="Category" value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
-              <input required type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
-              <input placeholder="Description (optional)" style={{ flexGrow: 1 }} value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
-            </div>
-            <button type="submit">{editing ? 'Save Changes' : 'Add'}</button>
-            {editing && <button type="button" onClick={resetForm} style={{ marginLeft: '1rem' }}>Cancel</button>}
-          </form>
+    <div className="space-y-6">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Finances</h2>
+          <p className="text-slate-500 mt-1">Track your income and expenses.</p>
         </div>
+        {!showForm && (
+          <button 
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Add Transaction
+          </button>
+        )}
+      </header>
 
-        <div style={{ flex: '1 1 300px', height: '300px', border: '1px solid #ddd', borderRadius: '8px', padding: '1rem' }}>
-          <h3 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>This Month's Expenses</h3>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
-              No expenses recorded this month yet.
-            </div>
-          )}
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-emerald-100 text-emerald-600 rounded-lg">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500">Total Income</p>
+            <p className="text-2xl font-bold text-slate-900">${totalIncome.toFixed(2)}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-rose-100 text-rose-600 rounded-lg">
+            <TrendingDown className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500">Total Expenses</p>
+            <p className="text-2xl font-bold text-slate-900">${totalExpense.toFixed(2)}</p>
+          </div>
+        </div>
+        <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-white/10 text-white rounded-lg">
+            <Wallet className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-400">Net Balance</p>
+            <p className={`text-2xl font-bold ${balance >= 0 ? 'text-white' : 'text-rose-400'}`}>
+              ${balance.toFixed(2)}
+            </p>
+          </div>
         </div>
       </div>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {(finances || []).map(entry => (
-          <li key={entry._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #eee' }}>
-            <div>
-              <strong>{entry.category}</strong> <span style={{ color: entry.type === 'income' ? 'green' : 'red' }}>
-                {entry.type === 'income' ? '+' : '-'}${entry.amount.toFixed(2)}
-              </span>
-              <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.2rem' }}>
-                {entry.date.split('T')[0]} 
-                {entry.description && ` | ${entry.description}`}
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          <h3 className="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100">
+            {editing ? 'Edit Transaction' : 'Add New Transaction'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Type</label>
+              <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all bg-white" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Amount ($)</label>
+              <input required type="number" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="0.00" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Category</label>
+              <input required className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="Food, Rent, Salary..." value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Date</label>
+              <input required type="date" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+            </div>
+            <div className="space-y-1 md:col-span-2 lg:col-span-4">
+              <label className="text-sm font-medium text-slate-700">Description (Optional)</label>
+              <input className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all" placeholder="Notes..." value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" className="px-5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm">
+              {editing ? 'Save Changes' : 'Add Transaction'}
+            </button>
+            <button type="button" onClick={resetForm} className="px-5 py-2 bg-white text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors font-medium">
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Col: Transactions */}
+        <div className="lg:col-span-2 space-y-4">
+          <h3 className="text-lg font-bold text-slate-900">Recent Transactions</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            {finances && finances.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">No transactions found.</div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {(finances || []).map(item => (
+                  <div key={item._id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-2 rounded-full ${item.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                        {item.type === 'income' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{item.category}</p>
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <span>{item.date.split('T')[0]}</span>
+                          {item.description && (
+                            <>
+                              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                              <span className="truncate max-w-[150px] sm:max-w-xs">{item.description}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <p className={`font-bold whitespace-nowrap ${item.type === 'income' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                        {item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)}
+                      </p>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleEdit(item)} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors" title="Edit">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item._id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div>
-              <button onClick={() => handleEdit(entry)} style={{ marginRight: '0.5rem' }}>Edit</button>
-              <button onClick={() => handleDelete(entry._id)}>Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Right Col: Chart */}
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 mb-4">Expenses by Category</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center min-h-[350px]">
+            {chartData.length === 0 ? (
+              <p className="text-slate-500 text-center">Not enough data to display chart.</p>
+            ) : (
+              <div className="w-full h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      innerRadius={60}
+                      paddingAngle={2}
+                      stroke="none"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => `$${Number(value).toFixed(2)}`}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
