@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useApi, useMutation } from '../hooks/useApi';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Plus, Trash2, TrendingUp, TrendingDown, Wallet, Edit2 } from 'lucide-react';
+import { Plus, Trash2, TrendingUp, TrendingDown, Wallet, Edit2, AlertCircle } from 'lucide-react';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 const Finances = () => {
   const { data: finances, loading, refetch } = useApi('/finances');
-  const { post, put, del } = useMutation();
+  const { mutating, post, put, del } = useMutation();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [formError, setFormError] = useState(null);
 
   const [form, setForm] = useState({
     amount: '', type: 'expense', category: '', date: '', description: ''
@@ -33,7 +34,8 @@ const Finances = () => {
       resetForm();
       refetch();
     } catch (err) {
-      alert(err.message || 'Error saving record');
+      setFormError(err.message || 'Error saving record');
+      setTimeout(() => setFormError(null), 5000);
     }
   };
 
@@ -56,7 +58,8 @@ const Finances = () => {
         await del(`/finances/${id}`);
         refetch();
       } catch (err) {
-        alert(err.message || 'Error deleting record');
+        setFormError(err.message || 'Error deleting record');
+        setTimeout(() => setFormError(null), 5000);
       }
     }
   };
@@ -92,6 +95,13 @@ const Finances = () => {
 
   return (
     <div className="space-y-6">
+      {formError && (
+        <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          {formError}
+          <button onClick={() => setFormError(null)} className="ml-auto text-red-400 hover:text-red-600">✕</button>
+        </div>
+      )}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-extrabold text-stone-900 tracking-tight">Finances</h2>
@@ -171,7 +181,7 @@ const Finances = () => {
             </div>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" className="px-5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm">
+            <button type="submit" disabled={mutating} className="px-5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
               {editing ? 'Save Changes' : 'Add Transaction'}
             </button>
             <button type="button" onClick={resetForm} className="px-5 py-2 bg-white text-stone-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors font-medium">
@@ -232,11 +242,11 @@ const Finances = () => {
         {/* Right Col: Chart */}
         <div>
           <h3 className="text-lg font-bold text-stone-900 mb-4">Expenses by Category</h3>
-          <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 flex flex-col items-center justify-center min-h-[350px]">
+          <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 flex flex-col items-center justify-center">
             {chartData.length === 0 ? (
-              <p className="text-stone-500 text-center">Not enough data to display chart.</p>
+              <p className="text-stone-500 text-center py-12">Not enough data to display chart.</p>
             ) : (
-              <div className="w-full h-[300px]">
+              <div className="w-full h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie

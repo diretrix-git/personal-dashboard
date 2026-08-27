@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useApi, useMutation } from '../hooks/useApi';
-import { Plus, Edit2, Trash2, BookOpen, Clock, CheckCircle2, Circle } from 'lucide-react';
+import { Plus, Edit2, Trash2, BookOpen, Clock, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Assignments = () => {
   const { data: assignments, loading, refetch } = useApi('/assignments');
-  const { post, put, del } = useMutation();
+  const { mutating, post, put, del } = useMutation();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [formError, setFormError] = useState(null);
 
   const [form, setForm] = useState({
     courseName: '', taskTitle: '', dueDate: '', status: 'pending'
@@ -30,7 +31,8 @@ const Assignments = () => {
       resetForm();
       refetch();
     } catch (err) {
-      alert(err.message || 'Error saving assignment');
+      setFormError(err.message || 'Error saving assignment');
+      setTimeout(() => setFormError(null), 5000);
     }
   };
 
@@ -52,7 +54,8 @@ const Assignments = () => {
         await del(`/assignments/${id}`);
         refetch();
       } catch (err) {
-        alert(err.message || 'Error deleting assignment');
+        setFormError(err.message || 'Error deleting assignment');
+        setTimeout(() => setFormError(null), 5000);
       }
     }
   };
@@ -65,7 +68,8 @@ const Assignments = () => {
       });
       refetch();
     } catch (err) {
-      alert(err.message || 'Error updating status');
+      setFormError(err.message || 'Error updating status');
+      setTimeout(() => setFormError(null), 5000);
     }
   };
 
@@ -88,6 +92,20 @@ const Assignments = () => {
 
   return (
     <div className="space-y-6">
+      <AnimatePresence>
+        {formError && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium"
+          >
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            {formError}
+            <button onClick={() => setFormError(null)} className="ml-auto text-red-400 hover:text-red-600">✕</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-extrabold text-stone-900 tracking-tight">Assignments</h2>
@@ -145,7 +163,7 @@ const Assignments = () => {
               </div>
             </div>
             <div className="flex gap-3 pt-2">
-              <motion.button whileTap={{ scale: 0.95 }} type="submit" className="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-bold shadow-md shadow-primary-600/20">
+              <motion.button whileTap={{ scale: 0.95 }} type="submit" disabled={mutating} className="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-bold shadow-md shadow-primary-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
                 {editing ? 'Save Changes' : 'Add Assignment'}
               </motion.button>
               <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={resetForm} className="px-6 py-2.5 bg-white text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors font-bold">
