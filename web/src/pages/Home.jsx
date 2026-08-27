@@ -1,13 +1,14 @@
 import { useApi } from '../hooks/useApi';
 import { isBefore, addDays, parseISO, format } from 'date-fns';
-import { Calendar, FileText, BellRing, Sparkles } from 'lucide-react';
+import { Calendar, FileText, BellRing, Sparkles, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Home = () => {
   const { data: subs, loading: loadingSubs } = useApi('/subscriptions');
   const { data: assignments, loading: loadingAssignments } = useApi('/assignments');
+  const { data: finances, loading: loadingFinances } = useApi('/finances');
 
-  if (loadingSubs || loadingAssignments) {
+  if (loadingSubs || loadingAssignments || loadingFinances) {
     return (
       <div className="flex items-center justify-center h-64 text-stone-500">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mr-3"></div>
@@ -58,6 +59,24 @@ const Home = () => {
 
   // Combine and sort
   const upcomingItems = [...upcomingSubs, ...upcomingAssignments].sort((a, b) => a.date - b.date);
+
+  // Finance summary for current month
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  let monthlyIncome = 0;
+  let monthlyExpense = 0;
+
+  (finances || []).forEach(item => {
+    const d = parseISO(item.date);
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+      if (item.type === 'income') monthlyIncome += item.amount;
+      else monthlyExpense += item.amount;
+    }
+  });
+
+  const monthlyBalance = monthlyIncome - monthlyExpense;
+  const recentTransactions = (finances || []).slice(0, 5);
+  const monthName = format(now, 'MMMM');
 
   return (
     <div className="space-y-6">
@@ -167,8 +186,71 @@ const Home = () => {
           )}
         </div>
       </section>
+
+      {/* Finance Summary */}
+      <section className="space-y-4">
+        <h3 className="text-xl font-bold text-stone-900">{monthName} Finances</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm flex items-center gap-4">
+            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-stone-500">Income</p>
+              <p className="text-xl font-bold text-stone-900">${monthlyIncome.toFixed(2)}</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm flex items-center gap-4">
+            <div className="p-3 bg-red-100 text-red-600 rounded-xl">
+              <TrendingDown className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-stone-500">Expenses</p>
+              <p className="text-xl font-bold text-stone-900">${monthlyExpense.toFixed(2)}</p>
+            </div>
+          </div>
+          <div className="bg-stone-900 rounded-2xl p-5 border border-stone-800 shadow-sm flex items-center gap-4">
+            <div className="p-3 bg-white/10 text-white rounded-xl">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-stone-400">Balance</p>
+              <p className={`text-xl font-bold ${monthlyBalance >= 0 ? 'text-white' : 'text-red-400'}`}>
+                ${monthlyBalance.toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {recentTransactions.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+            <div className="px-5 py-3 border-b border-stone-100">
+              <h4 className="font-bold text-stone-700 text-sm">Recent Transactions</h4>
+            </div>
+            <div className="divide-y divide-stone-50">
+              {recentTransactions.map(item => (
+                <div key={item._id} className="px-5 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-1.5 rounded-full ${item.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                      {item.type === 'income' ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-stone-800 text-sm">{item.category}</p>
+                      <p className="text-xs text-stone-400">{item.date.split('T')[0]}</p>
+                    </div>
+                  </div>
+                  <p className={`font-bold text-sm ${item.type === 'income' ? 'text-emerald-600' : 'text-stone-800'}`}>
+                    {item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 };
 
 export default Home;
+
