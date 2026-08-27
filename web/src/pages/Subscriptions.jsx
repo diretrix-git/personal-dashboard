@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Subscriptions = () => {
   const { data: subs, loading, refetch } = useApi('/subscriptions');
-  const { post, put, del } = useMutation();
+  const { mutating, post, put, del } = useMutation();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState(null);
@@ -152,7 +152,7 @@ const Subscriptions = () => {
               </div>
             </div>
             <div className="flex gap-3 pt-2">
-              <motion.button whileTap={{ scale: 0.95 }} type="submit" className="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-bold shadow-md shadow-primary-600/20">
+              <motion.button whileTap={{ scale: 0.95 }} type="submit" disabled={mutating} className="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-bold shadow-md shadow-primary-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
                 {editing ? 'Save Changes' : 'Add Subscription'}
               </motion.button>
               <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={resetForm} className="px-6 py-2.5 bg-white text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors font-bold">
