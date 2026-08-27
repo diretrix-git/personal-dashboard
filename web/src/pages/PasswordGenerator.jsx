@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { KeyRound, Copy, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 const PasswordGenerator = () => {
@@ -8,6 +8,7 @@ const PasswordGenerator = () => {
   const [includeSymbols, setIncludeSymbols] = useState(true);
   const [password, setPassword] = useState('');
   const [copied, setCopied] = useState(false);
+  const passwordRef = useRef('');
 
   const generatePassword = () => {
     let charset = 'abcdefghijklmnopqrstuvwxyz';
@@ -22,6 +23,7 @@ const PasswordGenerator = () => {
       newPassword += charset[array[i] % charset.length];
     }
     setPassword(newPassword);
+    passwordRef.current = newPassword;
     setCopied(false);
   };
 
@@ -35,14 +37,17 @@ const PasswordGenerator = () => {
     navigator.clipboard.writeText(password);
     setCopied(true);
     
-    // Auto-clear clipboard for security (fixing BUG-9 by not relying on closure for exact match, 
-    // or simply clearing it unconditionally after 30s as a basic security measure)
+    // Auto-clear clipboard after 30s using ref to avoid stale closure
+    const copiedPassword = passwordRef.current;
     setTimeout(() => {
-      navigator.clipboard.readText().then(text => {
-        if (text === password) {
-          navigator.clipboard.writeText('');
-        }
-      }).catch(() => {}); // Ignore errors if clipboard permission is denied
+      // Only clear if the password hasn't changed since copy
+      if (copiedPassword === passwordRef.current) {
+        navigator.clipboard.readText().then(text => {
+          if (text === copiedPassword) {
+            navigator.clipboard.writeText('');
+          }
+        }).catch(() => {}); // Ignore errors if clipboard permission is denied
+      }
     }, 30000);
     
     setTimeout(() => setCopied(false), 2000);
