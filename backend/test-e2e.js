@@ -19,9 +19,10 @@ const BASE = `http://localhost:${TEST_PORT}/api`;
 let server;
 
 const fetchJSON = async (url, options = {}) => {
+  const { headers: customHeaders, ...rest } = options;
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
+    ...rest,
+    headers: { 'Content-Type': 'application/json', ...(customHeaders || {}) },
   });
   const body = await res.text();
   let json;
